@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: smart-wallet-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: smart_wallet_user
+      POSTGRES_PASSWORD: smart_wallet_password
+      POSTGRES_DB: smart_wallet_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U smart_wallet_user']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: smart-wallet-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Frontend (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: smart-wallet-frontend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://smart_wallet_user:smart_wallet_password@postgres:5432/smart_wallet_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run dev
+
+  # Event Indexer Service (Background)
+  indexer:
+    build:
+      context: ./backend/indexer
+      dockerfile: Dockerfile
+    container_name: smart-wallet-indexer
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://smart_wallet_user:smart_wallet_password@postgres:5432/smart_wallet_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/indexer:/app
+      - /app/node_modules
+
+  # Worker Service (Background Jobs)
+  worker:
+    build:
+      context: ./backend/worker
+      dockerfile: Dockerfile
+    container_name: smart-wallet-worker
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://smart_wallet_user:smart_wallet_password@postgres:5432/smart_wallet_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/worker:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: smart-wallet-network
