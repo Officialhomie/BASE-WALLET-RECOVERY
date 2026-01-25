@@ -1,0 +1,13 @@
+{
+  "sender": "0x0000000000000000000000000000000000000000",
+  "nonce": "0x0",
+  "initCode": "0x",
+  "callData": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "callGasLimit": "0x0",
+  "verificationGasLimit": "0x0",
+  "preVerificationGas": "0x0",
+  "maxFeePerGas": "0x0",
+  "maxPriorityFeePerGas": "0x0",
+  "paymasterAndData": "0x",
+  "signature": "0x"
+}
