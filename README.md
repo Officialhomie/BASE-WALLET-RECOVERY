@@ -1,24 +1,90 @@
-# Base Wallet Recovery
+# Smart Wallet Manager
 
-A minimal, robust toolkit for recovering Coinbase Smart Wallet ownership when an EOA owner is compromised. Supports both Foundry CLI and Coinbase paymaster/bundler paths for gasless execution.
+A comprehensive platform for managing Coinbase Smart Wallets, combining enterprise-grade web interface with powerful CLI tools for wallet recovery and management.
+
+## 🎯 Two Ways to Use This Platform
+
+### 🌐 **Full-Stack Web Application** (Recommended for most users)
+Modern, production-ready web interface with:
+- Visual owner management (add/remove owners)
+- Transaction execution & batch operations
+- Real-time transaction history & analytics
+- Debug panel for developers
+- Multi-chain support (Base, Ethereum, testnets)
+- No CLI knowledge required
+
+**👉 [Get Started with Web App](./GETTING_STARTED.md)**
+
+### 🛠️ **CLI Tools** (For advanced users & recovery scenarios)
+Minimal, robust command-line toolkit for:
+- Emergency wallet recovery when owner is compromised
+- Foundry-based direct contract interaction
+- Gasless execution via Coinbase paymaster (ERC-4337)
+- Scripting and automation
+
+**👉 [CLI Documentation](#cli-tools-section)**
+
+---
 
 ## Overview
 
-This repository provides tools and documentation for:
+This repository provides:
 
+- **Full-Stack Web Platform**: Next.js 14 app with comprehensive wallet management
 - **Reading owner information** from Coinbase Smart Wallet
 - **Removing compromised owners** without sending ETH to them
-- **Dynamic ABI interactions** for future wallet operations
-- **Two execution paths**: Foundry direct calls and Coinbase paymaster (ERC-4337)
+- **Transaction execution** (single & batch) with gas estimation
+- **Transaction history** with event logs and analytics
+- **Developer debug panel** with live contract interaction
+- **Two execution paths**: Web UI + API or Foundry CLI + Coinbase paymaster
 
-## Problem Statement
+## 🚀 Quick Start - Web Platform
+
+### Get Up and Running in 5 Minutes
+
+```bash
+# 1. Clone repository
+git clone https://github.com/Officialhomie/BASE-WALLET-RECOVERY.git
+cd BASE-WALLET-RECOVERY
+
+# 2. Install dependencies
+cd frontend
+npm install
+
+# 3. Set up environment
+cp .env.local.example .env.local
+# Edit .env.local with your API keys
+
+# 4. Start database
+cd ..
+docker-compose up -d postgres redis
+
+# 5. Set up database schema
+cd frontend
+npm run db:push
+
+# 6. Start development server
+npm run dev
+
+# Open http://localhost:3000
+```
+
+**📖 Detailed setup guide:** [GETTING_STARTED.md](./GETTING_STARTED.md)
+
+**🏗️ Architecture overview:** [ARCHITECTURE.md](./ARCHITECTURE.md)
+
+**📚 Full documentation:** [FULLSTACK_README.md](./FULLSTACK_README.md)
+
+---
+
+## 📋 Problem Statement (CLI Use Case)
 
 When a Coinbase Smart Wallet owner EOA is compromised:
 - Attacker can drain any ETH sent to the compromised address
 - Traditional transactions fail (no gas)
-- **Solution**: Use ERC-4337 UserOperations with paymaster sponsorship
+- **Solution**: Use ERC-4337 UserOperations with paymaster sponsorship OR use the Web Platform
 
-## Quick Start
+## Quick Start - CLI Tools
 
 ### Prerequisites
 

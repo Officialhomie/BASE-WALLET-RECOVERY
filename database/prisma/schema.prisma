@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Wallet {
+  id                String          @id @default(cuid())
+  address           String          @unique
+  chainId           Int
+  implementation    String?
+  entryPoint        String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  owners            Owner[]
+  transactions      Transaction[]
+  userOperations    UserOperation[]
+  events            Event[]
+  analytics         WalletAnalytics?
+
+  @@index([address, chainId])
+}
+
+model Owner {
+  id              String          @id @default(cuid())
+  walletId        String
+  wallet          Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  index           Int
+  ownerType       OwnerType       // ADDRESS, PUBLIC_KEY
+  ownerBytes      String
+  ownerAddress    String?
+  publicKeyX      String?
+  publicKeyY      String?
+
+  addedAt         DateTime        @default(now())
+  addedInTx       String
+  removedAt       DateTime?
+  removedInTx     String?
+  isActive        Boolean         @default(true)
+
+  @@unique([walletId, index])
+  @@index([walletId, isActive])
+}
+
+model Transaction {
+  id                String          @id @default(cuid())
+  walletId          String
+  wallet            Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  hash              String          @unique
+  blockNumber       BigInt
+  blockHash         String
+  timestamp         DateTime
+
+  from              String
+  to                String
+  value             String
+  data              String?
+  gasUsed           String
+  gasPrice          String
+  status            TxStatus        // SUCCESS, FAILED, PENDING
+
+  type              TxType          // EXECUTE, BATCH, USEROP, OWNER_ADD, OWNER_REMOVE
+  functionName      String?
+  decodedInput      Json?
+
+  events            Event[]
+
+  @@index([walletId, timestamp])
+  @@index([hash])
+}
+
+model UserOperation {
+  id                    String          @id @default(cuid())
+  walletId              String
+  wallet                Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  userOpHash            String          @unique
+  sender                String
+  nonce                 BigInt
+  callData              String
+  callGasLimit          String
+  verificationGasLimit  String
+  preVerificationGas    String
+  maxFeePerGas          String
+  maxPriorityFeePerGas  String
+  paymasterAndData      String?
+  signature             String
+
+  bundlerUrl            String?
+  paymasterUrl          String?
+  sponsored             Boolean         @default(false)
+
+  status                UserOpStatus    // PENDING, INCLUDED, FAILED
+  transactionHash       String?
+  blockNumber           BigInt?
+
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([walletId, createdAt])
+  @@index([userOpHash])
+}
+
+model Event {
+  id              String          @id @default(cuid())
+  walletId        String
+  wallet          Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  transactionId   String?
+  transaction     Transaction?    @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  eventName       String          // AddOwner, RemoveOwner, Upgraded
+  blockNumber     BigInt
+  transactionHash String
+  logIndex        Int
+
+  args            Json            // Event arguments
+  timestamp       DateTime
+
+  @@index([walletId, eventName])
+  @@index([transactionHash])
+}
+
+model WalletAnalytics {
+  id                    String          @id @default(cuid())
+  walletId              String          @unique
+  wallet                Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  totalTransactions     Int             @default(0)
+  totalUserOps          Int             @default(0)
+  totalGasUsed          String          @default("0")
+  totalGasSpent         String          @default("0")
+
+  ownersAddedCount      Int             @default(0)
+  ownersRemovedCount    Int             @default(0)
+  currentOwnerCount     Int             @default(0)
+
+  lastActivityAt        DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+}
+
+enum OwnerType {
+  ADDRESS
+  PUBLIC_KEY
+}
+
+enum TxStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum TxType {
+  EXECUTE
+  BATCH
+  USEROP
+  OWNER_ADD
+  OWNER_REMOVE
+  UPGRADE
+  OTHER
+}
+
+enum UserOpStatus {
+  PENDING
+  INCLUDED
+  FAILED
+}
