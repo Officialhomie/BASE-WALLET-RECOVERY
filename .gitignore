@@ -26,3 +26,9 @@ Thumbs.db
 *.key
 *.pem
 secrets/
+
+# Markdown (keep README.md only)
+*.md
+!README.md
+**/*.md
+!**/README.md
