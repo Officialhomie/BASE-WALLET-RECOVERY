@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  transpilePackages: ['geist'],
 
   // Experimental features
   experimental: {
@@ -64,7 +65,12 @@ const nextConfig = {
 
   // Webpack configuration
   webpack: (config) => {
+    const path = require('path');
     config.resolve.fallback = { fs: false, net: false, tls: false };
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@react-native-async-storage/async-storage': path.resolve(__dirname, 'lib/stubs/async-storage.js'),
+    };
     config.externals.push('pino-pretty', 'lokijs', 'encoding');
     return config;
   },
