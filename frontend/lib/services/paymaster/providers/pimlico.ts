@@ -32,8 +32,22 @@ async function pimlicoRequest<T>(
     const text = await res.text();
     throw new Error(`Pimlico API error ${res.status}: ${text}`);
   }
-  const json = (await res.json()) as { result?: T; error?: { code: number; message: string } };
+  const json = (await res.json()) as { result?: T; error?: { code: number; message: string; data?: unknown } };
   if (json.error) {
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/a5f40433-2739-445d-8ac9-120ec920b4df', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: 'pimlico.ts:pimlicoRequest',
+        message: 'Pimlico RPC error full',
+        data: { message: json.error.message, code: json.error.code, data: json.error.data },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        hypothesisId: 'PimlicoError',
+      }),
+    }).catch(() => {});
+    // #endregion
     throw new Error(`Pimlico RPC error: ${json.error.message} (${json.error.code})`);
   }
   if (json.result === undefined) {
