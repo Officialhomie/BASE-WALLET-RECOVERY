@@ -26,6 +26,17 @@ export function encodeRemoveOwnerAtIndex(
 }
 
 /**
+ * Encode addOwnerAddress(owner) call data for the smart wallet.
+ */
+export function encodeAddOwnerAddress(owner: Address): Hex {
+  return encodeFunctionData({
+    abi: smartWalletAbi,
+    functionName: 'addOwnerAddress',
+    args: [owner],
+  });
+}
+
+/**
  * Encode execute(target, value, data) call data for the smart wallet.
  */
 export function encodeExecute(
