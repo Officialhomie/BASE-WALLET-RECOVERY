@@ -7,10 +7,21 @@ broadcast/
 # Environment variables
 .env
 .env.local
+frontend/.env.local
+
+# Next.js
+.next/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+
+# Dependencies
+node_modules/
+frontend/node_modules/
 
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 *~
@@ -21,13 +32,30 @@ Thumbs.db
 
 # Logs
 *.log
+debug-*.log
 
 # Private keys (NEVER commit these)
 *.key
 *.pem
 secrets/
 
-# Markdown (keep README.md only)
+# Temporary shell scripts
+*.sh
+
+# Temporary text files
+*.txt
+
+# Temporary JSON files (except package.json, tsconfig.json)
+allowlist-config.json
+CORRECTED_REQUEST.json
+
+# Temporary JS files in root
+sign-userop.js
+
+# Lock files (except package-lock.json)
+foundry.lock
+
+# Documentation - ignore all except README.md
 *.md
 !README.md
 **/*.md
