@@ -158,9 +158,9 @@ export default function HomePage() {
             <Link href="/docs" className="hover:text-foreground">
               Documentation
             </Link>
-            <Link href="/api" className="hover:text-foreground">
-              API
-            </Link>
+            <a href="/api" className="hover:text-foreground" target="_blank" rel="noopener noreferrer">
+              API (JSON)
+            </a>
             <Link href="https://github.com" className="hover:text-foreground">
               GitHub
             </Link>
