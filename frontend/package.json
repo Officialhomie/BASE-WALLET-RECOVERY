@@ -19,6 +19,7 @@
     "db:studio": "prisma studio --schema=../database/prisma/schema.prisma",
     "db:seed": "tsx ../database/prisma/seed.ts",
     "wagmi:generate": "wagmi generate",
+    "remove-owner": "tsx scripts/remove-owner-index1.ts",
     "postinstall": "prisma generate --schema=../database/prisma/schema.prisma"
   },
   "dependencies": {
