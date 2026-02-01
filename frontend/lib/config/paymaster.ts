@@ -18,8 +18,9 @@ export function getPaymasterConfig(chainId: number = BASE_CHAIN_ID): PaymasterCo
     process.env.NEXT_PUBLIC_PIMLICO_BUNDLER_URL ??
     `https://api.pimlico.io/v2/${chainId}/rpc`;
   const pimlicoPolicyId = process.env.NEXT_PUBLIC_PIMLICO_SPONSORSHIP_POLICY_ID;
-  const coinbasePaymasterUrl = process.env.NEXT_PUBLIC_COINBASE_PAYMASTER_URL ?? '';
-  const coinbaseBundlerUrl = process.env.NEXT_PUBLIC_COINBASE_BUNDLER_URL ?? '';
+  const coinbaseRpcBase = 'https://api.developer.coinbase.com/rpc/v1/base';
+  const coinbasePaymasterUrl = process.env.NEXT_PUBLIC_COINBASE_PAYMASTER_URL ?? coinbaseRpcBase;
+  const coinbaseBundlerUrl = process.env.NEXT_PUBLIC_COINBASE_BUNDLER_URL ?? coinbaseRpcBase;
   const cdpApiKey = process.env.CDP_API_KEY ?? '';
 
   return {
