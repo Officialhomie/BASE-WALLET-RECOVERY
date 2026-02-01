@@ -12,19 +12,23 @@ import type {
   GasPriceResult,
 } from '@/lib/types/paymaster';
 
-/** JSON-RPC request to Coinbase CDP (paymaster endpoint) */
+/**
+ * Coinbase CDP JSON-RPC (paymaster/bundler) uses the Client API Key in the URL path,
+ * not Bearer. Secret API Keys require a JWT and are for REST only.
+ * @see https://docs.cdp.coinbase.com/get-started/docs/cdp-api-keys
+ */
 async function coinbaseRequest<T>(
-  url: string,
+  baseUrl: string,
   apiKey: string,
   method: string,
   params: unknown[]
 ): Promise<T> {
+  const url = apiKey
+    ? `${baseUrl.replace(/\/$/, '')}/${apiKey}`
+    : baseUrl;
   const res = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       jsonrpc: '2.0',
       id: 1,
