@@ -350,7 +350,12 @@ async function main() {
       : config.coinbase?.apiKey;
 
   if (!bundlerUrl) throw new Error('Bundler URL not configured');
-  const url = bundlerUrl.includes('?') ? `${bundlerUrl}&apikey=${apiKey}` : `${bundlerUrl}?apikey=${apiKey}`;
+  const isCoinbase = config.provider === 'coinbase';
+  const url = isCoinbase && apiKey
+    ? `${bundlerUrl.replace(/\/$/, '')}/${apiKey}`
+    : bundlerUrl.includes('?')
+      ? `${bundlerUrl}&apikey=${apiKey}`
+      : `${bundlerUrl}?apikey=${apiKey}`;
 
   // #region agent log
   debugLog('remove-owner-index1.ts:preSend', 'before eth_sendUserOperation', {
