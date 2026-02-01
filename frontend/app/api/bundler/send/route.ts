@@ -16,7 +16,7 @@ function getBundlerConfigFromEnv(chainId: number) {
       process.env.PIMLICO_API_KEY ?? process.env.NEXT_PUBLIC_PIMLICO_API_KEY ?? '';
     return { bundlerUrl: url, apiKey };
   }
-  const url = process.env.NEXT_PUBLIC_COINBASE_BUNDLER_URL ?? '';
+  const url = process.env.NEXT_PUBLIC_COINBASE_BUNDLER_URL ?? 'https://api.developer.coinbase.com/rpc/v1/base';
   const apiKey = process.env.CDP_API_KEY ?? '';
   return { bundlerUrl: url, apiKey };
 }
