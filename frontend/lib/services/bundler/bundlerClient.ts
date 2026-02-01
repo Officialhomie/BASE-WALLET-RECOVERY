@@ -8,11 +8,12 @@ import type { UserOperationV06 } from '@/lib/types/paymaster';
 async function bundlerRequest<T>(
   url: string,
   method: string,
-  params: unknown[]
+  params: unknown[],
+  headers: Record<string, string> = {}
 ): Promise<T> {
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify({
       jsonrpc: '2.0',
       id: 1,
@@ -41,8 +42,10 @@ async function bundlerRequest<T>(
 
 export interface BundlerConfig {
   bundlerUrl: string;
-  /** Optional: for Pimlico, API key is in URL; for Coinbase, use Authorization header */
+  /** Optional: for Pimlico, API key in URL; for Coinbase CDP, use Bearer in Authorization header */
   apiKey?: string;
+  /** Use Bearer token (for Coinbase CDP). When true, apiKey is not appended to URL. */
+  useBearerAuth?: boolean;
 }
 
 export interface UserOperationReceipt {
@@ -66,11 +69,23 @@ export interface UserOperationReceipt {
 
 export class BundlerClient {
   private readonly url: string;
+  private readonly authHeaders: Record<string, string>;
 
   constructor(config: BundlerConfig) {
     let u = config.bundlerUrl.replace(/\/$/, '');
-    if (config.apiKey && !u.includes('apikey=')) {
+    const isCoinbaseRpc =
+      config.bundlerUrl.includes('coinbase') || config.bundlerUrl.includes('developer.coinbase.com');
+    // Coinbase CDP JSON-RPC uses Client API Key in the URL path, not Bearer.
+    if (config.apiKey && isCoinbaseRpc && !config.useBearerAuth) {
+      u = `${u}/${config.apiKey}`;
+      this.authHeaders = {};
+    } else if (config.apiKey && config.useBearerAuth) {
+      this.authHeaders = { Authorization: `Bearer ${config.apiKey}` };
+    } else if (config.apiKey && !u.includes('apikey=')) {
       u = u.includes('?') ? `${u}&apikey=${config.apiKey}` : `${u}?apikey=${config.apiKey}`;
+      this.authHeaders = {};
+    } else {
+      this.authHeaders = {};
     }
     this.url = u;
   }
@@ -79,10 +94,12 @@ export class BundlerClient {
     userOp: UserOperationV06,
     entryPoint: Address
   ): Promise<Hex> {
-    return bundlerRequest<Hex>(this.url, 'eth_sendUserOperation', [
-      userOp,
-      entryPoint,
-    ]);
+    return bundlerRequest<Hex>(
+      this.url,
+      'eth_sendUserOperation',
+      [userOp, entryPoint],
+      this.authHeaders
+    );
   }
 
   async getUserOperationReceipt(
@@ -92,7 +109,8 @@ export class BundlerClient {
     const result = await bundlerRequest<UserOperationReceipt | null>(
       this.url,
       'eth_getUserOperationReceipt',
-      [userOpHash, entryPoint]
+      [userOpHash, entryPoint],
+      this.authHeaders
     );
     return result;
   }
@@ -103,7 +121,7 @@ export class BundlerClient {
     const result = await bundlerRequest<{
       userOperation: UserOperationV06;
       entryPoint: Address;
-    } | null>(this.url, 'eth_getUserOperationByHash', [userOpHash]);
+    } | null>(this.url, 'eth_getUserOperationByHash', [userOpHash], this.authHeaders);
     return result;
   }
 }
